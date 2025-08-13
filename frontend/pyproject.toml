@@ -1,18 +1,14 @@
 [project]
-name = "MLOps_backend_service"
+name = "MLOps_frontend_service"
 version = "0.1.0"
-description = "Example of FastAPI backend for DataMinds bootcamp"
+description = "Example of Streamlit frontend for DataMinds bootcamp"
 readme = "README.md"
 requires-python = ">= 3.12"
 authors = [{ name = "Elkhn", email = "elxana@azercell.com" }]
 dependencies = [
-    "fastapi>=0.116.1",
     "openpyxl>=3.1.5",
-    # runtime deps go here, e.g. "pandas>=2.2"
     "pandas>=2.3.1",
-    "python-multipart>=0.0.20",
-    "scikit-learn>=1.7.1",
-    "uvicorn>=0.35.0",
+    "streamlit>=1.48.1",
 ]
 
 # [tool.ruff]
@@ -23,9 +19,7 @@ ignore = ["E402"]
 
 [tool.black]
 line-length = 100
-extend-exclude = '^(data|reports|models|notebooks)/'
 
 [tool.isort]
 profile = "black" # keeps isort compatible with Black
 line_length = 100
-skip_glob = ["data/**", "reports/**", "models/**", "notebooks/**"]

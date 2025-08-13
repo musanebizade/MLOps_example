@@ -68,7 +68,9 @@ def main():
         ]
     )
 
-    rf = RandomForestClassifier(n_estimators=200, max_depth=None, random_state=42, n_jobs=-1)
+    rf = RandomForestClassifier(
+        n_estimators=200, max_depth=None, random_state=42, n_jobs=-1
+    )
 
     model = Pipeline(steps=[("preprocess", preprocess), ("rf", rf)])
 
