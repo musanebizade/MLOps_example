@@ -52,10 +52,7 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: "1"
         run: |
           set -e
-
-          # Optional: pull new base images (won't fail the job if none are defined)
-          docker-compose -f docker-compose.yml pull || true
-
+          
           # Stop old containers, remove orphans (keeps named volumes)
           docker-compose -f docker-compose.yml down --remove-orphans
 
