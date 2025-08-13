@@ -8,6 +8,11 @@
 ---
 
 Example for DataMinds bootcamp
+when in server let your username "ubuntu" to run docker commands without sudo
+sudo usermod -aG docker ubuntu
+
+run github runner in detach mode:
+nohup ./run.sh > runner.log 2>&1 &
 
 ## Structure
 ------------
