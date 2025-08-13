@@ -1,151 +1,268 @@
-# SmartContractor
+# DataMinds'25 ML Predictor - Frontend
 
-**Automated Contract Processing with AI-Powered Data Extraction**
+🤖 A modern, user-friendly Streamlit application for making machine learning predictions with an intuitive drag-and-drop interface.
 
----
+## 🌟 Features
 
-## 📖 Overview
+- **📁 Easy File Upload**: Support for CSV, Excel (.xlsx, .xls) file formats
+- **👀 Data Preview**: Interactive data visualization and statistical summaries
+- **🚀 Real-time Predictions**: Lightning-fast ML predictions via backend API
+- **📊 Results Visualization**: Comprehensive prediction results display
+- **📥 Export Functionality**: Download predictions as CSV files
+- **📱 Responsive Design**: Works seamlessly across different screen sizes
+- **⚡ Session Management**: Persistent file handling across interactions
 
-SmartContractor is an end-to-end solution designed to streamline contract processing by combining AI-driven data extraction with human oversight. The system automates the extraction of key contract details, validates accuracy through user interaction, and generates finalized PDFs—reducing manual effort while maintaining precision.
+## 🛠️ Technology Stack
 
----
+- **Frontend Framework**: Streamlit
+- **Data Processing**: Pandas
+- **HTTP Client**: Requests
+- **File Handling**: BytesIO for efficient memory management
+- **UI Components**: Custom Streamlit components with enhanced styling
+- **Dependency Management**: UV (ultra-fast Python package installer)
+- **Containerization**: Docker with multi-stage builds
+- **Orchestration**: Docker Compose integration
 
-## ✨ Key Features
+## 🐳 Docker Setup
 
-- **Document Classification**: Automatically identifies contract type.
-- **LLM/NLP Data Extraction**: Extracts entities (company name, ID, dates, items, pricing).
-- **User Validation Interface**: Confirm/Correct extracted data via web UI.
-- **Human-in-the-Loop Editing**: Manual fixes when AI results need adjustment.
-- **PDF Generation**: Produce downloadable/email-ready contracts.
-- **Iterative Processing**: Cycles until user confirms all data is accurate.
+This frontend application is fully containerized and designed to work as part of a Docker Compose stack.
 
----
+### Prerequisites
 
-## 🏗️ Architecture Overview
+- Docker 20.10+ 
+- Docker Compose 2.0+
 
-The system consists of several key components that work together to automate and streamline the document extraction and validation process:
+### Project Dependencies
 
-### Web Interface (UI)
-- Users can upload vendor contract files through the web interface
-- The UI provides a simple way for users to interact with the system
+Dependencies are managed using **UV** for faster, more reliable installations:
 
-### File Storage Layer
-- Uploaded files are temporarily stored in a file storage layer for further processing
-
-### Document Classification Module
-- The document classification module identifies the type of contract (e.g., vendor contract) based on the contents of the uploaded document
-
-### Data Extraction (LLM/NLP)
-This module uses a language model (LLM) and NLP techniques to extract key data from the contract, such as:
-- Company Name
-- Company ID
-- Date, Item List
-- Quantity, Price, and Total
-
-### Confirmation from User
-- The user is prompted to confirm the extracted data or request edits
-- The system ensures the user can review the extracted details and make corrections if necessary
-
-### Human in the Loop (if necessary)
-- If the user requests edits, a human operator may manually fix the extracted data before the document is processed
-
-### Final PDF Generation
-- Once the data is confirmed, a PDF containing the extracted details is generated
-- The user is given the option to download it or send it via email
-
-### System Architecture
-```plaintext
-                         +------------------------------+
-                         |       Web Interface (UI)     |
-                         |  (User uploads vendor file)  |
-                         +--------------+---------------+
-                                        |
-                                        v
-                         +--------------+---------------+
-                         |       File Storage Layer      |
-                         | (Temporary input file storage)|
-                         +--------------+---------------+
-                                        |
-                                        v
-                         +--------------+---------------+
-                         | Document Classification Module|
-                         | (Which contract type is it?)  |
-                         +--------------+---------------+
-                                        |
-                                        v
-                         +--------------+---------------+
-                         |   Data Extraction (LLM/NLP)   |
-                         | - Company Name                |
-                         | - Company ID                  |
-                         | - Date, Item List             |
-                         | - Quantity, Price, Total      |
-                         +--------------+---------------+
-                                        |
-                                        v
-                         +--------------+---------------+
-                         |     Confirmation from User    |
-                         | ("Is everything correct?")    |
-                         +--------------+---------------+
-                                        |
-                      /-----------------+-----------------------\
-                     /                  |                        \
-                    v                   v                         v
-        [Everything OK]      +-----------+------------+     [User Requests Edits]        
-               |             |    Human in the loop   |                |
-               v             |(Manually fix the Data) |                v
-        [Generate PDF] <-----+-----------+------------+       +---------------------------+
-              |                                               |   Get User Comments        |
-          ----+----                                           | (Text instructions / fixes)|
-         /         \                                          +------------+--------------+
-        /           \                                                      |
-[Download PDF]    [Send PDF to Email]                                      v
-       |                 |                                     +------------+--------------+
-        \               /                                      | Combine Extracted Data    |
-         \             /                                       |   with User Comments      |
-          v           v                                        +------------+--------------+
-       [Process Complete]                                                   |
-                                                                            v
-                                                               +------------+--------------+
-                                                               | Data Extraction (LLM/NLP) |
-                                                               |    with user comments     |
-                                                               +------------+--------------+
-                                                                            |
-                                                                            v
-                                                               +------------+--------------+
-                                                               | Re-send New Extracted     |
-                                                               |         Entities          |
-                                                               +------------+--------------+
-                                                                            |
-                                                                            └────> Repeat Until Confirmed
-
+```toml
+# pyproject.toml
+[project]
+dependencies = [
+    "streamlit>=1.28.0",
+    "pandas>=1.5.0", 
+    "requests>=2.28.0"
+]
 ```
 
+## 🚀 Quick Start
 
-## 🛠️ Technologies Used
-- **Docker**: For containerizing the application and ensuring consistent deployment across different environments.
-- **Python**: The core language used for the backend processing.
-- **streamlit**: For building the web interface and user interaction.
-- **weasyprint**: For converting the extracted data into a downloadable PDF.
-- **jinja2**: For rendering the final PDF templates.
-- **python-docx**: For handling and processing Word documents (if required).
-- **openpyxl**: For processing Excel files, if required.
-- **PyPDF2**: For PDF file manipulation and extraction tasks.
-- **boto3**: For integration with AWS services (e.g., file storage, Lambda).
-- **Amazon Bedrock LLM**: For leveraging advanced NLP and language model capabilities for document classification and data extraction.
+### Option 1: Docker Compose (Recommended)
 
-## 📋 Usage
-1. **Upload Documents**
-* Access the web interface and upload a contract document
-* Supported formats: PDF, DOCX, DOC
-2. **Review Extracted Data**
-* The system will automatically extract key information
-* Review the extracted data for accuracy
-3. **Validate or Edit Data**
-* Confirm if the extraction is correct
-* Make edits if needed or request human intervention
-4. **Generate PDF**
-* Once data is confirmed, generate the final PDF
-* Download the document or send via email
+The frontend is part of a larger Docker Compose application:
 
-## License
-This project is licensed under the Azercell.
+```bash
+# Run the entire stack
+docker-compose up -d
+
+# View logs
+docker-compose logs frontend
+
+# Stop the stack
+docker-compose down
+```
+
+The application will be available at `http://localhost:8501`
+
+### Option 2: Standalone Docker
+
+```bash
+# Build the frontend image
+docker build -t dataminds-frontend .
+
+# Run the container
+docker run -p 8501:8501 \
+  -e BACKEND_URL=http://backend:5000 \
+  dataminds-frontend
+```
+
+### Option 3: Local Development
+
+For local development without Docker:
+
+```bash
+# Install UV (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies
+uv sync
+
+# Run the application
+uv run streamlit run app.py
+```
+
+## 🏗️ Architecture
+
+### Application Structure
+
+```
+├── app.py                 # Main Streamlit application
+├── Dockerfile            # Container build instructions
+├── pyproject.toml        # UV project configuration & dependencies
+├── uv.lock              # Locked dependency versions
+├── docker-compose.yml   # Multi-service orchestration (if standalone)
+└── README.md            # This file
+```
+
+### Key Components
+
+1. **File Upload Handler**: Manages CSV/Excel file uploads with validation
+2. **Data Processor**: Loads and previews uploaded data using pandas
+3. **API Client**: Communicates with backend ML service
+4. **Results Manager**: Displays predictions and handles downloads
+5. **Session State**: Maintains application state across interactions
+
+## 🔧 Configuration
+
+### Environment Variables
+
+The application can be configured via environment variables:
+
+```bash
+# Backend API endpoint
+BACKEND_URL=http://backend:5000
+
+# Streamlit configuration
+STREAMLIT_SERVER_PORT=8501
+STREAMLIT_SERVER_ADDRESS=0.0.0.0
+```
+
+### Docker Compose Integration
+
+This frontend service integrates with other services in the Docker Compose stack:
+
+```yaml
+# Example docker-compose.yml snippet
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    networks:
+      - safe_networks
+    restart: always
+    image: frontend
+    container_name: frontend
+    volumes:
+      - ./frontend:/app
+      - frontend_venv:/app/.venv
+    ports:
+      - "8501:8501"
+```
+
+### Backend API Configuration
+
+The application communicates with the backend ML service:
+
+```python
+# Default configuration
+api_url = "http://backend:5000/predict"
+```
+
+### Supported File Formats
+
+- **CSV**: `.csv` files with comma-separated values
+- **Excel**: `.xlsx` and `.xls` files
+
+## 📊 Usage Guide
+
+### Step 1: Upload Your Data
+
+1. Use the sidebar file uploader
+2. Select a CSV or Excel file
+3. View the automatic data preview
+
+### Step 2: Review Data
+
+- **Dataset Overview**: View file metrics (rows, columns, size)
+- **Data Preview**: Inspect your data structure
+- **Statistics**: Optional statistical summary
+
+### Step 3: Generate Predictions
+
+1. Click the "🚀 Generate Predictions" button
+2. Wait for backend processing
+3. View results with processing time metrics
+
+### Step 4: Download Results
+
+- Download predictions as CSV file
+- Results include original data + prediction column
+
+## 🎯 Expected Data Format
+
+Your input data should be structured with:
+- **Features in columns**: Each column represents a data feature
+- **Samples in rows**: Each row represents a data point
+- **Clean data**: No missing headers, properly formatted values
+
+### Example Format
+
+| Feature_1 | Feature_2 | Feature_3 | Category |
+|-----------|-----------|-----------|----------|
+| 1.2       | 0.8       | 10        | A        |
+| 2.1       | 1.5       | 15        | B        |
+| 3.4       | 2.3       | 20        | A        |
+
+## 🔌 API Integration
+
+### Backend Requirements
+
+The frontend expects a backend service with:
+
+- **Endpoint**: `POST /predict`
+- **Input**: Multipart form data with file upload
+- **Output**: JSON response with predictions
+
+### Expected API Response Format
+
+```json
+{
+  "status": "success",
+  "message": "Predictions generated successfully",
+  "data": {
+    "predictions": [0.85, 0.92, 0.78, ...],
+    "num_predictions": 1000,
+    "processing_time_seconds": 0.234
+  }
+}
+```
+
+### Error Handling
+
+The application handles various error scenarios:
+- Network connectivity issues
+- Invalid file formats
+- Backend service errors
+- Malformed API responses
+
+## 🎨 UI Features
+
+### Visual Elements
+
+- **Modern Design**: Clean, professional interface
+- **Progress Indicators**: Loading spinners for async operations
+- **Success Messages**: Visual feedback for successful operations
+- **Metrics Display**: Key statistics prominently displayed
+- **Expandable Sections**: Organized content with collapsible panels
+
+### Session Management
+
+- **Persistent State**: Uploaded files remain available across interactions
+- **Smart Caching**: Efficient memory usage with BytesIO
+- **State Cleanup**: Automatic cleanup when files are removed
+
+## 🔒 Security Considerations
+
+- **File Validation**: MIME type detection and validation
+- **Size Limits**: Streamlit's built-in file size restrictions
+- **Network Timeouts**: 60-second timeout for API calls
+- **Error Sanitization**: Safe error message display
+
+## 📈 Performance Features
+
+- **Efficient Data Loading**: BytesIO for memory-efficient file handling
+- **Preview Limits**: Display only first 100 rows for large datasets
+- **Async Operations**: Non-blocking UI during predictions
+- **Response Caching**: Session state prevents redundant operations

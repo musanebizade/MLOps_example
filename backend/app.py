@@ -14,12 +14,6 @@ logger = logging.getLogger(__name__)
 
 BAKU_TZ = timezone(timedelta(hours=4))
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-BAKU_TZ = timezone(timedelta(hours=4))
-
 # Initialize FastAPI app
 app = FastAPI(
     title="FastAPI Backend server for ML project",

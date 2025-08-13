@@ -7,90 +7,92 @@
 
 ---
 
-Example for DataMinds bootcamp
-when in server let your username "ubuntu" to run docker commands without sudo
-sudo usermod -aG docker ubuntu
+## Overview
 
-run github runner in detach mode:
-nohup ./run.sh > runner.log 2>&1 &
+This repository demonstrates a simple MLOps pipeline example created for the DataMinds bootcamp. It showcases how to build, dockerize, and deploy a machine learning application with service communication, along with implementing CI/CD workflows using GitHub Actions and self-hosted runners.
 
-## Structure
-------------
+## Architecture
 
-    ├── LICENSE
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
-    │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
-    ├── uv.lock   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `uv lock > uv.lock`
-    │
-    ├── pyptoject.toml    <- makes project uv installable (uv installs) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
+- **Backend**: FastAPI for ML model serving and API endpoints
+- **Frontend**: Streamlit for interactive web interface
+- **Containerization**: Docker and Docker Compose for service orchestration
+- **CI/CD**: GitHub Actions with self-hosted runner deployment
 
+## Quick Start
 
---------
+### Prerequisites
 
+- Docker and Docker Compose installed
+- Git
 
-## Getting started (uv)
-```bash
-# create venv and sync (will create uv.lock)
-uv sync
+### Running the Application
 
-# add a runtime dependency
-uv add numpy
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Elkhn/MLOps_example.git
+   cd MLOps_example
+   ```
 
-# run code
-uv run python -m src.models.train_model
+2. **Launch services with Docker Compose**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Access the application**
+   - Frontend (Streamlit): `http://localhost:8501`
+   - Backend API (FastAPI): `http://localhost:8000`
+   - API Documentation: `http://localhost:8000/docs`
+
+4. **Stop the application**
+   ```bash
+   docker-compose down
+   ```
+
+## Project Structure
+
+```
+MLOps_example/
+├── backend/              # FastAPI application
+├── frontend/             # Streamlit application
+├── docker-compose.yml    # Service orchestration
+├── .github/workflows/    # CI/CD pipelines
+└── README.md
 ```
 
-## Code quality (ruff, isort, black via uvx)
-### Run tools in ephemeral envs — no dev dependencies added to your project.
+## Development Setup
 
-#### Lint (no changes)
-```bash
-# Lint entire repo
-uvx ruff check .
-```
+### For Server Deployment (Ubuntu)
 
-#### Auto-fix
-```bash
-# 1) Sort imports
-uvx isort .
+1. **Add user to docker group** (to run docker commands without sudo)
+   ```bash
+   sudo usermod -aG docker ubuntu
+   ```
 
-# 2) Format code
-uvx black .
+2. **Create GitHub self-hosted runner**
+   - Go to your repository **Settings** → **Actions** → **Runners**
+   - Click **"New self-hosted runner"** and select **Linux**
+   - Follow all the setup steps provided by GitHub **except the last step**
+   - Don't run `./run.sh` directly as shown in GitHub instructions
 
-# 3) Apply Ruff’s safe fixes (entire repo)
-uvx ruff check --fix .
-```
-> Also remove unused imports/variables:
-> ```bash
-> uvx ruff check --fix --unsafe-fixes .
-> ```
+3. **Launch GitHub runner in detached mode**
+   ```bash
+   nohup ./run.sh > runner.log 2>&1 &
+   ```
+
+## Key Features
+
+- **Dockerized Services**: Both backend and frontend are containerized for consistent deployment
+- **Service Communication**: Demonstrates proper inter-service communication patterns
+- **CI/CD Pipeline**: Automated testing and deployment using GitHub Actions
+- **Self-hosted Runner**: Shows how to set up and use self-hosted runners for deployment
+- **Learning Playground**: Intended for exploring and practicing MLOps concepts
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://opensource.org/licenses/Apache-2.0) file for details.
+
+---
+
+*This is a educational example project demonstrating MLOps best practices. For production use, consider additional security, monitoring, and scalability measures.*
+
+**Made with ❤️ for DataMinds'25 students**
