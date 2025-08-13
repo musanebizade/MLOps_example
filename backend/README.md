@@ -105,7 +105,7 @@ docker-compose logs backend
 docker-compose down
 ```
 
-The API will be available at `http://localhost:5000`
+The API will be available at `http://localhost:8000`
 
 ### Option 2: Standalone Docker
 
@@ -114,9 +114,9 @@ The API will be available at `http://localhost:5000`
 docker build -t dataminds-backend .
 
 # Run the container
-docker run -p 5000:5000 \
+docker run -p 8000:8000 \
   -e HOST=0.0.0.0 \
-  -e PORT=5000 \
+  -e PORT=8000 \
   dataminds-backend
 ```
 
@@ -132,7 +132,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 
 # Run the application
-uv run uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ## 📡 API Endpoints
@@ -185,7 +185,7 @@ Upload a file and receive ML predictions.
 
 ### Interactive API Documentation
 
-- **Swagger UI**: `http://localhost:5000/docs`
+- **Swagger UI**: `http://localhost:8000/docs`
 
 ## 🔧 Configuration
 
@@ -194,7 +194,7 @@ Upload a file and receive ML predictions.
 ```bash
 # Server configuration
 HOST=0.0.0.0
-PORT=5000
+PORT=8000
 WORKERS=1
 
 # Logging
@@ -223,7 +223,7 @@ services:
       - ./backend:/app
       - backend_venv:/app/.venv
     ports:
-      - "5000:5000"
+      - "8000:8000"
 ```
 
 ### CORS Configuration

@@ -22,8 +22,8 @@ RUN uv sync --no-dev
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Expose 5000 port
-EXPOSE 5000
+# Expose 8000 port
+EXPOSE 8000
 
 # Run uvicorn server for fastapi application 
-CMD ["uv", "run", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
+CMD ["uv", "run", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

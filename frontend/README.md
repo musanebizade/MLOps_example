@@ -73,7 +73,7 @@ docker build -t dataminds-frontend .
 
 # Run the container
 docker run -p 8501:8501 \
-  -e BACKEND_URL=http://backend:5000 \
+  -e BACKEND_URL=http://backend:8000 \
   dataminds-frontend
 ```
 
@@ -121,7 +121,7 @@ The application can be configured via environment variables:
 
 ```bash
 # Backend API endpoint
-BACKEND_URL=http://backend:5000
+BACKEND_URL=http://backend:8000
 
 # Streamlit configuration
 STREAMLIT_SERVER_PORT=8501
@@ -157,7 +157,7 @@ The application communicates with the backend ML service:
 
 ```python
 # Default configuration
-api_url = "http://backend:5000/predict"
+api_url = "http://backend:8000/predict"
 ```
 
 ### Supported File Formats

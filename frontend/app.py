@@ -92,7 +92,7 @@ def main():
         )
         st.markdown("---")
 
-        api_url = "http://backend:5000/predict"
+        api_url = "http://backend:8000/predict"
 
         st.markdown("### 📁 Upload Your Data")
         uploaded = st.file_uploader(
