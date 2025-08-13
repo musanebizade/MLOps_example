@@ -15,6 +15,9 @@ dependencies = [
 # [tool.ruff]
 # lint.extend-select = ["ALL"]
 
+[tool.ruff.lint]
+ignore = ["E402"]
+
 [tool.black]
 line-length = 100
 extend-exclude = '^(data|reports|models|notebooks)/'
