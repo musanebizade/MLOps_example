@@ -48,29 +48,22 @@ jobs:
 
       - name: Build & (re)start stack via Docker Compose
         env:
-          DOCKER_BUILDKIT: "1"
+          DOCKER_BUILDKIT: "0"
           COMPOSE_DOCKER_CLI_BUILD: "1"
         run: |
           set -e
 
-          # Pick compose command (V2 preferred)
-          if docker compose version >/dev/null 2>&1; then
-            COMPOSE="docker compose"
-          else
-            COMPOSE="docker-compose"
-          fi
-
           # Optional: pull new base images (won't fail the job if none are defined)
-          $COMPOSE -f docker-compose.yml pull || true
+          docker-compose -f docker-compose.yml pull || true
 
           # Stop old containers, remove orphans (keeps named volumes)
-          $COMPOSE -f docker-compose.yml down --remove-orphans
+          docker-compose -f docker-compose.yml down --remove-orphans
 
           # Rebuild and start in the background
-          $COMPOSE -f docker-compose.yml up -d --build
+          docker-compose -f docker-compose.yml up -d --build
 
           # Show status
-          $COMPOSE -f docker-compose.yml ps
+          docker-compose -f docker-compose.yml ps
 
       # Optional: clean up dangling images to save disk space on the runner
       - name: Prune dangling images (optional)
