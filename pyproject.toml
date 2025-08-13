@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">= 3.12"
 authors = [{ name = "Elkhn", email = "elxana@azercell.com" }]
 dependencies = [
+    "openpyxl>=3.1.5",
     # runtime deps go here, e.g. "pandas>=2.2"
+    "pandas>=2.3.1",
+    "scikit-learn>=1.7.1",
 ]
 
 # [tool.ruff]
@@ -19,5 +22,4 @@ extend-exclude = '^(data|reports|models|notebooks)/'
 [tool.isort]
 profile = "black" # keeps isort compatible with Black
 line_length = 100
-src_paths = ["src"]
-extend_skip = ["data", "reports", "models", "notebooks"]
+skip_glob = ["data/**", "reports/**", "models/**", "notebooks/**"]
