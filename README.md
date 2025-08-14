@@ -7,7 +7,7 @@
 
 ---
 
-## Overview
+## Overview of the Project
 
 This repository demonstrates a simple MLOps pipeline example created for the DataMinds bootcamp. It showcases how to build, dockerize, and deploy a machine learning application with service communication, along with implementing CI/CD workflows using GitHub Actions and self-hosted runners.
 
