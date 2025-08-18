@@ -1,89 +1,94 @@
-import logging
-import traceback
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from typing import Any, Dict
+import joblib
+import pandas as pd
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from io import StringIO
+import numpy as np
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-from src.models.predict_model import main as predict_main
+app = FastAPI()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Load your trained model
+try:
+    model = joblib.load("models/xgb_model.pkl")
+except FileNotFoundError:
+    raise Exception("Model file 'xgb_model.pkl' not found. Make sure it's in the correct directory.")
 
-BAKU_TZ = timezone(timedelta(hours=4))
-
-# Initialize FastAPI app
-app = FastAPI(
-    title="FastAPI Backend server for ML project",
-    description="REST API for ML project",
-    version="1.0.0",
-    docs_url="/docs",
-)
-
-# Add CORS middleware to allow Streamlit frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.get("/health")
-def health() -> Dict[str, Any]:
-    utc_time = datetime.now(timezone.utc).isoformat()
-    baku_time = datetime.now(BAKU_TZ).isoformat()
-    return {"status": "healthy", "utc_time": utc_time, "baku_time": baku_time}
-
+# Columns expected by the model
+EXPECTED_COLS = [
+    "trf", "age", "gndr", "tenure", "age_dev", "dev_man", 
+    "device_os_name", "dev_num", "is_dualsim", "simcard_type", "region"
+]
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)) -> Dict[str, Any]:
-    start_time = datetime.now()
+async def predict(file: UploadFile = File(...)):
     try:
         # Validate file type
-        suffix = Path(file.filename).suffix.lower()
-        if suffix not in {".csv", ".xlsx", ".xls"}:
+        if not file.filename.endswith('.csv'):
+            raise HTTPException(status_code=400, detail="Only CSV files are supported")
+        
+        # Read the file content
+        contents = await file.read()
+        
+        # Decode and read as CSV with robust parsing
+        csv_content = contents.decode("utf-8")
+        df = pd.read_csv(
+            StringIO(csv_content),
+            dtype=str,  # Read as strings first
+            na_filter=False,  # Don't convert to NaN automatically
+            skipinitialspace=True,
+            encoding_errors='replace'
+        )
+        
+        # Check if DataFrame is empty
+        if df.empty:
+            raise HTTPException(status_code=400, detail="The uploaded CSV file is empty")
+        
+        # Check for missing columns
+        missing_cols = [col for col in EXPECTED_COLS if col not in df.columns]
+        if missing_cols:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Missing required columns: {', '.join(missing_cols)}"
+            )
+        
+        # Keep only the columns needed for the model (in the correct order)
+        df_model = df[EXPECTED_COLS]
+        
+        # Check for any missing values that might cause issues
+        if df_model.isnull().any().any():
+            # You might want to handle missing values here
+            # For now, we'll raise an error
+            null_cols = df_model.columns[df_model.isnull().any()].tolist()
             raise HTTPException(
                 status_code=400,
-                detail="Invalid file format. Please upload CSV or Excel files only.",
+                detail=f"Missing values found in columns: {', '.join(null_cols)}"
             )
-
-        # Read file content (async!)
-        file_content = await file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Uploaded file is empty")
-
-        logger.info(f"Processing file: {file.filename} ({len(file_content)} bytes)")
-
-        # Generate predictions
-        predictions_list = predict_main(file_content, filename=file.filename)
-
-        # Ensure JSON-serializable (handles numpy arrays/Series)
-        try:
-            predictions_list = list(predictions_list)
-        except TypeError:
-            predictions_list = [p for p in predictions_list]
-
-        processing_time = (datetime.now() - start_time).total_seconds()
+        
+        # Perform prediction
+        predictions = model.predict(df_model)
+        
+        # Convert numpy types to Python native types for JSON serialization
+        if isinstance(predictions, np.ndarray):
+            predictions = predictions.tolist()
+        
         return {
-            "status": "success",
-            "message": "Predictions generated successfully",
-            "data": {
-                "predictions": predictions_list,
-                "num_predictions": len(predictions_list),
-                "processing_time_seconds": round(processing_time, 3),
-            },
+            "predictions": predictions,
+            "num_predictions": len(predictions)
         }
-
-    except HTTPException:
-        # pass through expected client errors
-        raise
+        
+    except pd.errors.EmptyDataError:
+        raise HTTPException(status_code=400, detail="The CSV file is empty or invalid")
+    except pd.errors.ParserError as e:
+        raise HTTPException(status_code=400, detail=f"Error parsing CSV file: {str(e)}")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Data validation error: {str(e)}")
     except Exception as e:
-        logger.error(f"Unexpected error during prediction: {e}")
-        logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Internal server error during prediction: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# Health check endpoint
+@app.get("/")
+async def root():
+    return {"message": "Model prediction API is running"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "model_loaded": model is not None}

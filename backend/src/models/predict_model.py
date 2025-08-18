@@ -1,76 +1,84 @@
-import warnings
-
-warnings.filterwarnings("ignore")
-
-import gzip
-import io
-import os
-import pickle
-from typing import Iterable, Optional
-
 import pandas as pd
+import joblib
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from category_encoders import CatBoostEncoder
+from sklearn.decomposition import PCA
 
-# Root of the repo (two levels up from this file)
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+def load_model(model_path):
+    """Loads the trained model from a file."""
+    model = joblib.load(model_path)
+    return model
 
+def preprocess_data_for_prediction(df):
+    """Prepares the data for prediction (same preprocessing as during training)."""
+    X = df.drop('target', axis=1)
 
-def load_model(filepath: str):
-    """
-    Load a gzip-pickled model from disk.
-    """
-    with gzip.open(filepath, "rb") as f:
-        p = pickle.Unpickler(f)
-        clf = p.load()
-    return clf
+    # Identify columns by types
+    val_cols = [col for col in X.columns if col.startswith('val')]
+    numeric_cols = X.select_dtypes(include=['int64', 'float64']).columns.difference(val_cols)
+    categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
 
+    return X, val_cols, numeric_cols, categorical_cols
 
-def _load_dataframe_from_bytes(
-    file_content: bytes, filename: Optional[str]
-) -> pd.DataFrame:
-    """
-    Read an uploaded file (bytes) into a DataFrame using file extension.
-    Defaults to Excel if the extension is ambiguous.
-    """
-    name = (filename or "").lower()
-    buffer = io.BytesIO(file_content)
+def create_preprocessor(val_cols, numeric_cols, categorical_cols):
+    """Creates the preprocessing pipeline (same as during training)."""
+    val_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler()),
+        ('pca', PCA(n_components=0.95)),
+    ])
 
-    if name.endswith(".csv"):
-        df = pd.read_csv(buffer)
-    elif name.endswith(".xlsx") or name.endswith(".xls"):
-        df = pd.read_excel(buffer)
-    else:
-        # Fall back to Excel; FastAPI already validated extensions, this is just a guard.
-        df = pd.read_excel(buffer)
-    return df
+    numeric_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler()),
+    ])
 
+    categorical_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', CatBoostEncoder(handle_unknown='ignore')),
+    ])
 
-def main(
-    file_content: Optional[bytes] = None, filename: Optional[str] = None
-) -> Iterable:
-    """
-    Accepts raw file bytes and an optional filename to parse CSV/Excel,
-    loads the trained model, and returns predictions.
-    """
-    # Load input features
-    if file_content:
-        X_test = _load_dataframe_from_bytes(file_content, filename)
-    else:
-        # Fallback path for local testing
-        X_test_path = os.path.join(ROOT_DIR, "data", "external", "X_test.xlsx")
-        X_test = pd.read_excel(X_test_path)
+    preprocessor = ColumnTransformer([
+        ('val', val_pipeline, val_cols),
+        ('num', numeric_pipeline, numeric_cols),
+        ('cat', categorical_pipeline, categorical_cols),
+    ])
 
-    # Load model and predict
-    model_path = os.path.join(ROOT_DIR, "models", "titanic_rf.pkl.gz")
-    loaded_model = load_model(model_path)
-    y_pred = loaded_model.predict(X_test)
+    return preprocessor
 
-    try:
-        return y_pred.tolist()
-    except TypeError:
-        return [p for p in y_pred]
+def predict(model, X, preprocessor):
+    """Makes predictions using the trained model and preprocessed data."""
+    X_processed = preprocessor.fit_transform(X)
+    predictions = model.predict(X_processed)
+    return predictions
 
+def save_predictions(predictions, output_path='predictions.csv'):
+    """Saves the predictions to a CSV file."""
+    output = pd.DataFrame({'Predictions': predictions})
+    output.to_csv(output_path, index=False)
+    print(f"Predictions saved as '{output_path}'.")
 
-if __name__ == "__main__":
-    # Quick manual test (reads default X_test.xlsx)
-    preds = main()
-    print(f"Generated {len(preds)} predictions")
+def main():
+    # Load model
+    model = load_model('best_model.pkl')
+
+    # Load data (same format as training data)
+    df = pd.read_parquet('/content/multisim_dataset.parquet')
+
+    # Preprocess data for prediction
+    X, val_cols, numeric_cols, categorical_cols = preprocess_data_for_prediction(df)
+
+    # Create preprocessor
+    preprocessor = create_preprocessor(val_cols, numeric_cols, categorical_cols)
+
+    # Make predictions
+    predictions = predict(model, X, preprocessor)
+
+    # Save predictions
+    save_predictions(predictions)
+
+if __name__ == '__main__':
+    main()
