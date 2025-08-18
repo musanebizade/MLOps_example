@@ -6,8 +6,11 @@ readme = "README.md"
 requires-python = ">= 3.12"
 authors = [{ name = "musanebizade", email = "musanebi2005@gmail.com" }]
 dependencies = [
+    "matplotlib>=3.10.5",
     "openpyxl>=3.1.5",
     "pandas>=2.3.1",
+    "plotly>=6.3.0",
+    "seaborn>=0.13.2",
     "streamlit>=1.48.1",
 ]
 
