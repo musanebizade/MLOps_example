@@ -225,7 +225,7 @@ if uploaded_file is not None:
                     f"📎 Extra columns found: {', '.join(extra_cols[:3])}{'...' if len(extra_cols) > 3 else ''}"
                 )
 
-        # Data preview section.
+        # Data preview section
         if show_data_preview:
             st.subheader("👀 Data Preview")
 
