@@ -82,7 +82,7 @@ st.markdown("""
 with st.sidebar:
     st.header("📊 Model Information")
     
-    # Check backend health
+    # Check backend health.
     try:
         health_response = requests.get("http://backend:8000/health", timeout=5)
         if health_response.status_code == 200:
